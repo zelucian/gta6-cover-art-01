@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sunset Cover Studio</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>#preview-canvas{object-fit:contain}.shot-cover .workspace{display:grid!important;grid-template-columns:1fr!important;grid-template-rows:1fr!important;height:100vh!important}.shot-cover .control-panel{display:none!important}.shot-cover .stage-frame canvas{object-fit:contain!important}.nudge-pad{grid-template-rows:repeat(3,18px)}.nudge-pad button:nth-child(4){display:block}</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-lockup">
+      <div class="brand-mark"><span></span><span></span><span></span></div>
+      <div>
+        <p class="eyebrow">OFFLINE POSTER LAB</p>
+        <h1>Sunset <strong>Cover Studio</strong></h1>
+      </div>
+    </div>
+    <div class="top-actions">
+      <label class="size-picker">Preview
+        <select id="preview-size" aria-label="Preview size">
+          <option value="square">Square · 1080 × 1080</option>
+          <option value="portrait">Portrait · 1080 × 1350</option>
+          <option value="wide">Wide · 1920 × 1080</option>
+        </select>
+      </label>
+      <button class="button button-quiet" id="export-current">Export PNG</button>
+      <button class="button button-primary" id="export-all">Export all 3</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="control-panel">
+      <section class="control-section photo-section">
+        <div class="section-heading">
+          <div><span class="section-number">01</span><h2>Photo tray</h2></div>
+          <span class="microcopy">LOCAL ONLY</span>
+        </div>
+        <div class="photo-actions">
+          <label class="button button-small button-primary upload-button">Add photos<input id="photo-upload" type="file" accept="image/*" multiple></label>
+          <button class="button button-small button-quiet" id="use-samples">Use samples</button>
+        </div>
+        <div class="tray" id="photo-tray"><div class="tray-empty">Add a photo, then click a panel to place it.</div></div>
+        <button class="text-button" id="assign-all">Use selected photo in every panel <span>→</span></button>
+      </section>
+
+      <section class="control-section">
+        <div class="section-heading"><div><span class="section-number">02</span><h2>Panel layout</h2></div></div>
+        <div class="layout-grid" id="layout-picker">
+          <button class="layout-button active" data-layout="key"><span class="layout-icon layout-key"><i></i><i></i><i></i><i></i><i></i></span>Key Art</button>
+          <button class="layout-button" data-layout="duo"><span class="layout-icon layout-duo"><i></i><i></i></span>Duo</button>
+          <button class="layout-button" data-layout="trio"><span class="layout-icon layout-trio"><i></i><i></i><i></i></span>Trio</button>
+          <button class="layout-button" data-layout="solo"><span class="layout-icon layout-solo"><i></i></span>Solo</button>
+        </div>
+      </section>
+
+      <section class="control-section caption-section">
+        <div class="section-heading"><div><span class="section-number">03</span><h2>Lettering</h2></div><span class="microcopy">LIVE TYPE</span></div>
+        <label class="field-label">Main title <textarea id="title-input" rows="2" maxlength="42">SUNSET HEIST</textarea></label>
+        <label class="field-label">Tagline <input id="tagline-input" maxlength="54" value="A NIGHT TO REMEMBER"></label>
+        <div class="field-row">
+          <label class="field-label compact">Placement<select id="title-position"><option value="bottom">Lower third</option><option value="top">Upper third</option></select></label>
+          <label class="field-label compact">Fill<select id="title-fill"><option value="gradient">Sunset gradient</option><option value="white">Solid white</option><option value="pink">Neon pink</option></select></label>
+        </div>
+        <div class="range-row"><label for="title-size">Scale</label><input id="title-size" type="range" min="72" max="150" value="112"><output id="title-size-value">112</output></div>
+        <div class="range-row"><label for="letter-spacing">Tracking</label><input id="letter-spacing" type="range" min="-3" max="18" value="4"><output id="letter-spacing-value">4</output></div>
+        <div class="toggle-row"><label class="toggle-label"><input id="title-outline" type="checkbox" checked><span></span>Keyline</label><label class="toggle-label"><input id="title-glow" type="checkbox" checked><span></span>Glow</label></div>
+      </section>
+
+      <section class="control-section compact-section">
+        <div class="section-heading"><div><span class="section-number">04</span><h2>Colour grade</h2></div></div>
+        <div class="grade-grid" id="grade-picker"><button class="grade-button active" data-grade="sunset"><span class="grade-swatch grade-sunset"></span>Sunset</button><button class="grade-button" data-grade="neon"><span class="grade-swatch grade-neon"></span>Neon dusk</button><button class="grade-button" data-grade="candy"><span class="grade-swatch grade-candy"></span>Miami candy</button><button class="grade-button" data-grade="noir"><span class="grade-swatch grade-noir"></span>Night noir</button></div>
+        <div class="effect-row"><label class="toggle-label"><input id="effect-sun" type="checkbox" checked><span></span>Sun disc</label><label class="toggle-label"><input id="effect-palms" type="checkbox" checked><span></span>Palms</label><label class="toggle-label"><input id="effect-grain" type="checkbox" checked><span></span>Grain</label></div>
+      </section>
+
+      <section class="control-section panel-section">
+        <div class="section-heading"><div><span class="section-number">05</span><h2>Selected panel</h2></div><span id="panel-label" class="microcopy">PANEL 01</span></div>
+        <div class="range-row"><label for="panel-zoom">Zoom</label><input id="panel-zoom" type="range" min="100" max="300" value="100"><output id="panel-zoom-value">1.0×</output></div>
+        <div class="panel-actions"><button class="button button-small button-quiet" id="fit-mode">Fill</button><div class="nudge-pad"><button data-nudge="up">↑</button><button data-nudge="left">←</button><button data-nudge="right">→</button><button data-nudge="down">↓</button></div><span class="microcopy">DRAG PHOTO TO PAN</span></div>
+      </section>
+    </aside>
+
+    <main class="stage-area">
+      <div class="stage-meta"><span>LIVE PREVIEW</span><span id="preview-meta">1080 × 1080 · KEY ART</span></div>
+      <div class="stage-frame"><canvas id="preview-canvas" width="1080" height="1080" aria-label="Cover preview"></canvas><div class="stage-corner top-left"></div><div class="stage-corner top-right"></div><div class="stage-corner bottom-left"></div><div class="stage-corner bottom-right"></div></div>
+      <div class="stage-hint"><span class="hint-dot"></span>Click a panel to select · drag to reposition · export when ready</div>
+    </main>
+  </div>
+
+  <footer class="statusbar"><div><span class="status-light"></span><span id="status-text">Ready to make something loud.</span></div><span>NO UPLOADS · WORKS OFFLINE</span></footer>
+  <div id="selftest-result" hidden></div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
