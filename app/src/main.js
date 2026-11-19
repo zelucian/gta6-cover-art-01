@@ -9,7 +9,7 @@ const shot = sceneForQuery(query);
 const canvas = document.getElementById('preview-canvas');
 const statusText = document.getElementById('status-text');
 const state = {
-  layout: 'key', previewSize: 'square', grade: 'sunset', title: 'SUNSET HEIST', tagline: 'A NIGHT TO REMEMBER', titleFill: 'gradient', titlePosition: 'bottom', titleSize: 112, letterSpacing: 4, titleOutline: true, titleGlow: true, effects: { sun: true, palms: true, grain: true }, photos: [], assignments: [0, 0, 0, 0, 0], transforms: Array.from({ length: 5 }, () => ({ zoom: 1, panX: 0, panY: 0, fit: false })), selectedPanel: 0, selectedPhoto: 0,
+  layout: 'key', previewSize: 'square', grade: 'sunset', title: 'SUNSET HEIST', tagline: 'A NIGHT TO REMEMBER', titleFill: 'gradient', titlePosition: 'bottom', titleSize: 112, letterSpacing: 4, titleOutline: true, titleGlow: true, sunPosition: 'top-right', effects: { palms: true, grain: true }, photos: [], assignments: [0, 0, 0, 0, 0], transforms: Array.from({ length: 5 }, () => ({ zoom: 1, panX: 0, panY: 0, fit: false })), selectedPanel: 0, selectedPhoto: 0,
 };
 
 function setStatus(message) { statusText.textContent = message; }
@@ -25,13 +25,18 @@ function loadImage(source, name) {
 
 async function loadSamples(names = ['pier', 'boulevard']) {
   state.photos = [];
-  for (const name of names) {
-    try { state.photos.push(await loadImage(`./samples/${name}.jpg`, photoNames[name] || name.toUpperCase())); } catch { setStatus('Could not load that sample photo.'); }
+  const indices = new Map();
+  for (const name of new Set(names)) {
+    try {
+      const photo = await loadImage(`./samples/${name}.jpg`, photoNames[name]);
+      indices.set(name, state.photos.push(photo) - 1);
+    } catch { setStatus('Could not load that sample photo.'); }
   }
   state.selectedPhoto = 0;
   state.assignments = state.assignments.map(() => 0);
   renderTray();
   render();
+  return indices;
 }
 
 function renderTray() {
@@ -62,6 +67,7 @@ function updateControls() {
   document.getElementById('letter-spacing-value').textContent = state.letterSpacing;
   document.getElementById('title-outline').checked = state.titleOutline;
   document.getElementById('title-glow').checked = state.titleGlow;
+  document.getElementById('sun-position').value = state.sunPosition;
   document.getElementById('panel-label').textContent = `PANEL ${String(state.selectedPanel + 1).padStart(2, '0')}`;
   const transform = state.transforms[state.selectedPanel];
   document.getElementById('panel-zoom').value = Math.round(transform.zoom * 100);
@@ -76,6 +82,7 @@ function resizePreview() {
   const [width, height] = sizes[state.previewSize];
   canvas.width = width;
   canvas.height = height;
+  canvas.parentElement.style.setProperty('--preview-ratio', width / height);
   render();
 }
 
@@ -114,7 +121,8 @@ function wireControls() {
   document.getElementById('letter-spacing').addEventListener('input', event => { state.letterSpacing = Number(event.target.value); render(); });
   document.getElementById('title-outline').addEventListener('change', event => { state.titleOutline = event.target.checked; render(); });
   document.getElementById('title-glow').addEventListener('change', event => { state.titleGlow = event.target.checked; render(); });
-  ['sun', 'palms', 'grain'].forEach(effect => document.getElementById(`effect-${effect}`).addEventListener('change', event => { state.effects[effect] = event.target.checked; render(); }));
+  document.getElementById('sun-position').addEventListener('change', event => { state.sunPosition = event.target.value; render(); });
+  ['palms', 'grain'].forEach(effect => document.getElementById(`effect-${effect}`).addEventListener('change', event => { state.effects[effect] = event.target.checked; render(); }));
   document.getElementById('panel-zoom').addEventListener('input', event => { state.transforms[state.selectedPanel].zoom = Number(event.target.value) / 100; render(); });
   document.getElementById('fit-mode').addEventListener('click', () => { state.transforms[state.selectedPanel].fit = !state.transforms[state.selectedPanel].fit; render(); });
   document.querySelectorAll('[data-nudge]').forEach(button => button.addEventListener('click', () => { const transform = state.transforms[state.selectedPanel]; const distance = .025; if (button.dataset.nudge === 'left') transform.panX -= distance; if (button.dataset.nudge === 'right') transform.panX += distance; if (button.dataset.nudge === 'up') transform.panY -= distance; if (button.dataset.nudge === 'down') transform.panY += distance; render(); }));
@@ -170,10 +178,11 @@ async function runSelftest() {
 
 async function bootstrap() {
   wireControls();
-  if (document.fonts?.ready) await document.fonts.ready;
-  await loadSamples([shot.photo]);
+  await Promise.allSettled([document.fonts.load('16px Anton'), document.fonts.load('16px Bebas')]);
+  const indices = await loadSamples(shot.assignments);
+  state.assignments = state.assignments.map((_, index) => indices.get(shot.assignments[index]) ?? 0);
   state.layout = shot.layout;
-  if (shot.layout === 'trio') state.transforms.forEach((transform, index) => { transform.panY = [-0.3, 0.05, 0.35][index] ?? 0; });
+  for (const [index, pan] of Object.entries(shot.pans ?? {})) Object.assign(state.transforms[index], pan);
   state.previewSize = shot.size;
   state.grade = shot.grade;
   state.title = shot.caption;

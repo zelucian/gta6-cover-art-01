@@ -56,8 +56,10 @@
 
       <section class="control-section caption-section">
         <div class="section-heading"><div><span class="section-number">03</span><h2>Lettering</h2></div><span class="microcopy">LIVE TYPE</span></div>
-        <label class="field-label">Main title <textarea id="title-input" rows="2" maxlength="42">SUNSET HEIST</textarea></label>
-        <label class="field-label">Tagline <input id="tagline-input" maxlength="54" value="A NIGHT TO REMEMBER"></label>
+        <div class="field-row caption-inputs">
+          <label class="field-label">Main title <textarea id="title-input" rows="2" maxlength="42">SUNSET HEIST</textarea></label>
+          <label class="field-label">Tagline <input id="tagline-input" maxlength="54" value="A NIGHT TO REMEMBER"></label>
+        </div>
         <div class="field-row">
           <label class="field-label compact">Placement<select id="title-position"><option value="bottom">Lower third</option><option value="top">Upper third</option></select></label>
           <label class="field-label compact">Fill<select id="title-fill"><option value="gradient">Sunset gradient</option><option value="white">Solid white</option><option value="pink">Neon pink</option></select></label>
@@ -70,7 +72,7 @@
       <section class="control-section compact-section">
         <div class="section-heading"><div><span class="section-number">04</span><h2>Colour grade</h2></div></div>
         <div class="grade-grid" id="grade-picker"><button class="grade-button active" data-grade="sunset"><span class="grade-swatch grade-sunset"></span>Sunset</button><button class="grade-button" data-grade="neon"><span class="grade-swatch grade-neon"></span>Neon dusk</button><button class="grade-button" data-grade="candy"><span class="grade-swatch grade-candy"></span>Miami candy</button><button class="grade-button" data-grade="noir"><span class="grade-swatch grade-noir"></span>Night noir</button></div>
-        <div class="effect-row"><label class="toggle-label"><input id="effect-sun" type="checkbox" checked><span></span>Sun disc</label><label class="toggle-label"><input id="effect-palms" type="checkbox" checked><span></span>Palms</label><label class="toggle-label"><input id="effect-grain" type="checkbox" checked><span></span>Grain</label></div>
+        <div class="effect-row"><label class="field-label compact sun-control">Sun <select id="sun-position"><option value="top-right">Top-right</option><option value="top-left">Top-left</option><option value="off">Off</option></select></label><label class="toggle-label"><input id="effect-palms" type="checkbox" checked><span></span>Palms</label><label class="toggle-label"><input id="effect-grain" type="checkbox" checked><span></span>Grain</label></div>
       </section>
 
       <section class="control-section panel-section">

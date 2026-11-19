@@ -1,9 +1,20 @@
 const GRADES = {
-  sunset: { top: 'rgba(255,145,86,.20)', bottom: 'rgba(93,22,117,.67)', edge: '#ff7b85', sun: '#ffd18a' },
-  neon: { top: 'rgba(12,89,156,.29)', bottom: 'rgba(229,28,140,.65)', edge: '#62e7e0', sun: '#ff91bf' },
-  candy: { top: 'rgba(255,204,127,.26)', bottom: 'rgba(144,47,173,.58)', edge: '#ffc7b0', sun: '#fff1b2' },
-  noir: { top: 'rgba(118,72,78,.18)', bottom: 'rgba(13,20,49,.72)', edge: '#d39b9c', sun: '#e4bf9b' },
+  sunset: { top: 'rgba(255,145,86,.20)', bottom: 'rgba(93,22,117,.45)', edge: '#ff7b85', sun: '#ffd18a' },
+  neon: { top: 'rgba(12,89,156,.29)', bottom: 'rgba(229,28,140,.44)', edge: '#62e7e0', sun: '#ff91bf' },
+  candy: { top: 'rgba(255,204,127,.26)', bottom: 'rgba(144,47,173,.39)', edge: '#ffc7b0', sun: '#fff1b2' },
+  noir: { top: 'rgba(118,72,78,.18)', bottom: 'rgba(13,20,49,.48)', edge: '#d39b9c', sun: '#e4bf9b' },
 };
+const TITLE_PANEL = { key: 2, duo: 0, trio: 2, solo: 0 };
+const PALM = new Path2D(`
+  M -11 3 C -7 -23 0 -51 17 -71 L 22 -70 C 9 -49 4 -24 4 3 Z
+  M 20 -69 C 8 -84 -9 -88 -30 -77 C -10 -80 5 -74 20 -69 Z
+  M 20 -69 C 6 -80 -15 -77 -25 -63 C -13 -70 3 -70 20 -69 Z
+  M 20 -70 C 18 -83 6 -94 -9 -94 C 2 -89 9 -76 20 -70 Z
+  M 19 -70 C 25 -88 42 -93 60 -88 C 43 -88 35 -80 19 -70 Z
+  M 19 -70 C 40 -88 75 -84 93 -68 C 67 -79 43 -72 19 -70 Z
+  M 19 -70 C 50 -80 87 -70 100 -51 C 81 -62 48 -69 19 -70 Z
+  M 19 -71 C 48 -72 64 -59 68 -43 C 53 -56 34 -63 19 -71 Z
+  M 18 -71 C 38 -66 41 -52 36 -40 C 33 -55 24 -60 18 -71 Z`);
 
 export function getPanelRects(layout, width, height) {
   const gap = Math.max(7, Math.round(Math.min(width, height) * 0.009));
@@ -78,76 +89,41 @@ function drawPanel(context, panel, image, transform, grade, index) {
   context.restore();
 }
 
-function drawSun(context, width, height, grade) {
-  const portrait = height > width;
-  const square = width === height;
-  const centerX = width * (portrait ? .68 : square ? .60 : .82);
-  const centerY = height * (portrait ? .10 : square ? .12 : .12);
-  const radius = Math.min(width, height) * (portrait ? .052 : square ? .06 : .065);
+function drawSun(context, width, height, grade, position) {
+  const radius = Math.min(width, height) * .026;
+  const centerX = width * (position === 'top-left' ? .052 : .948);
+  const centerY = radius * 2.2;
+  const glowRadius = radius * 1.8;
   context.save();
-  context.globalCompositeOperation = 'screen';
-  const glow = context.createRadialGradient(centerX, centerY, radius * .2, centerX, centerY, radius * 1.65);
-  glow.addColorStop(0, `${grade.sun}aa`);
-  glow.addColorStop(.55, `${grade.sun}22`);
+  const glow = context.createRadialGradient(centerX, centerY, radius * .5, centerX, centerY, glowRadius);
+  glow.addColorStop(0, `${grade.sun}70`);
+  glow.addColorStop(.55, `${grade.sun}26`);
   glow.addColorStop(1, `${grade.sun}00`);
   context.fillStyle = glow;
-  context.fillRect(centerX - radius * 2, centerY - radius * 2, radius * 4, radius * 4);
+  context.fillRect(centerX - glowRadius, centerY - glowRadius, glowRadius * 2, glowRadius * 2);
   context.fillStyle = grade.sun;
+  context.globalAlpha = .85;
   context.beginPath();
   context.arc(centerX, centerY, radius, 0, Math.PI * 2);
   context.fill();
-  context.globalAlpha = .32;
-  context.strokeStyle = '#fff0c8';
-  context.lineWidth = Math.max(1, width * .0015);
-  for (let ray = 0; ray < 14; ray += 1) {
-    const angle = ray * Math.PI / 7;
-    context.beginPath();
-    context.moveTo(centerX + Math.cos(angle) * radius * 1.22, centerY + Math.sin(angle) * radius * 1.22);
-    context.lineTo(centerX + Math.cos(angle) * radius * 1.5, centerY + Math.sin(angle) * radius * 1.5);
-    context.stroke();
-  }
   context.restore();
 }
 
-function drawPalm(context, width, height, side, grade) {
-  const baseX = side === 'left' ? width * .02 : width * .98;
-  const baseY = height * 1.02;
-  const lean = side === 'left' ? 1 : -1;
+function drawPalm(context, width, height, side) {
+  const left = side === 'left';
   context.save();
-  context.strokeStyle = 'rgba(17,10,32,.78)';
-  context.fillStyle = 'rgba(17,10,32,.78)';
-  context.lineCap = 'round';
-  context.lineWidth = Math.max(2, width * .008);
-  context.beginPath();
-  context.moveTo(baseX, baseY);
-  context.bezierCurveTo(baseX + lean * width * .015, height * .72, baseX + lean * width * .06, height * .48, baseX + lean * width * .04, height * .30);
-  context.stroke();
-  const crownX = baseX + lean * width * .04;
-  const crownY = height * .30;
-  for (let leaf = 0; leaf < 8; leaf += 1) {
-    const angle = -Math.PI * .94 + leaf * Math.PI * .27;
-    const tipX = crownX + Math.cos(angle) * width * .12;
-    const tipY = crownY + Math.sin(angle) * height * .1;
-    context.beginPath();
-    context.moveTo(crownX, crownY);
-    context.quadraticCurveTo(crownX + Math.cos(angle) * width * .055 + lean * width * .02, crownY - height * .05, tipX, tipY);
-    context.stroke();
-  }
-  context.globalAlpha = .2;
-  context.strokeStyle = grade.edge;
-  context.lineWidth = Math.max(1, width * .002);
-  context.beginPath();
-  context.moveTo(baseX + lean * width * .01, baseY);
-  context.bezierCurveTo(baseX + lean * width * .02, height * .72, baseX + lean * width * .07, height * .48, baseX + lean * width * .05, height * .31);
-  context.stroke();
+  context.translate(width * (left ? .013 : .993), height * 1.005);
+  context.scale(width * (left ? .00092 : -.00106), height * (left ? .00325 : .00305));
+  context.fillStyle = 'rgba(18,9,29,.90)';
+  context.fill(PALM);
   context.restore();
 }
 
 function drawDecoration(context, width, height, state, grade) {
-  if (state.effects.sun) drawSun(context, width, height, grade);
+  if (state.sunPosition !== 'off') drawSun(context, width, height, grade, state.sunPosition);
   if (state.effects.palms) {
-    drawPalm(context, width, height, 'left', grade);
-    drawPalm(context, width, height, 'right', grade);
+    drawPalm(context, width, height, 'left');
+    drawPalm(context, width, height, 'right');
   }
   context.save();
   context.globalAlpha = .14;
@@ -177,40 +153,77 @@ function drawDecoration(context, width, height, state, grade) {
   }
 }
 
-function splitTitle(context, title, maxWidth) {
-  const words = title.trim().toUpperCase().split(/\s+/).filter(Boolean);
-  if (!words.length) return ['SUNSET'];
-  if (words.length === 1) return words;
-  let best = [words.join(' ')];
-  let bestDifference = Infinity;
-  for (let split = 1; split < words.length; split += 1) {
-    const first = words.slice(0, split).join(' ');
-    const second = words.slice(split).join(' ');
-    const widest = Math.max(context.measureText(first).width, context.measureText(second).width);
-    if (widest <= maxWidth && maxWidth - widest < bestDifference) {
-      best = [first, second];
-      bestDifference = maxWidth - widest;
-    }
-  }
-  return best;
+function titleOptions(title) {
+  const cleaned = title.trim().toUpperCase() || 'SUNSET';
+  const explicitLines = cleaned.split(/\n+/).map(line => line.trim()).filter(Boolean);
+  if (explicitLines.length === 2) return [explicitLines];
+  const words = cleaned.split(/\s+/);
+  return [[words.join(' ')], ...words.slice(1).map((_, index) => [words.slice(0, index + 1).join(' '), words.slice(index + 1).join(' ')])];
 }
 
-function drawLettering(context, width, height, state, grade) {
-  const margin = width * .075;
-  const maxWidth = width * .77;
-  const size = Math.max(38, Math.min(width, height) * state.titleSize / 1000);
+function measureLine(context, text) {
+  const metrics = context.measureText(text);
+  return { text, left: metrics.actualBoundingBoxLeft, width: metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight,
+    ascent: metrics.actualBoundingBoxAscent, height: metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent };
+}
+
+function drawLettering(context, panel, width, height, state) {
+  const padX = Math.max(12, Math.min(panel.w * .075, width * .06));
+  const padY = Math.max(12, Math.min(panel.h * .10, height * .085));
+  const maxWidth = panel.w - padX * 2;
+  const maxHeight = Math.min(panel.h - padY * 2, panel.h * .55);
+  const desired = Math.min(width, height) * state.titleSize / 1000;
+  const options = titleOptions(state.title);
+  const tagline = (state.tagline.trim() || 'A NIGHT TO REMEMBER').toUpperCase().replace(/\s+/g, ' ');
+  const setTitleFont = size => {
+    context.font = `${size}px Anton, Impact, sans-serif`;
+    context.letterSpacing = `${state.letterSpacing * size / desired}px`;
+  };
+  const setTagFont = size => {
+    context.font = `${size}px Bebas, Arial, sans-serif`;
+    context.letterSpacing = `${Math.max(1, state.letterSpacing * .7) * size / Math.max(13, desired * .22)}px`;
+  };
   context.save();
-  context.font = `${size}px Anton, Impact, sans-serif`;
-  context.textBaseline = 'top';
-  context.letterSpacing = `${state.letterSpacing}px`;
-  const lines = splitTitle(context, state.title, maxWidth);
-  const lineHeight = size * .88;
-  const titleHeight = lineHeight * lines.length;
-  const titleY = state.titlePosition === 'top' ? height * .12 : height - titleHeight - height * .18;
-  const titleX = margin;
+  context.textBaseline = 'alphabetic';
+  context.beginPath();
+  context.rect(panel.x + 4, panel.y + 4, panel.w - 8, panel.h - 8);
+  context.clip();
+  let size = desired;
+  let tagSize, tag, lines, titleHeight;
+  const lineGap = () => size * .11;
+  const tagGap = () => Math.max(5, size * .14);
+  while (size >= 1) {
+    tagSize = Math.max(10, size * .22);
+    setTagFont(tagSize);
+    tag = measureLine(context, tagline);
+    while (tag.width > maxWidth) {
+      tagSize *= .92;
+      setTagFont(tagSize);
+      tag = measureLine(context, tagline);
+    }
+    setTitleFont(size);
+    lines = undefined;
+    let narrowest = Infinity;
+    for (const option of options) {
+      const measured = option.map(line => measureLine(context, line));
+      const widest = Math.max(...measured.map(line => line.width));
+      const inkHeight = measured.reduce((sum, line) => sum + line.height, 0) + (measured.length - 1) * lineGap();
+      if (widest > maxWidth || widest >= narrowest || inkHeight + tagGap() + tag.height > maxHeight) continue;
+      lines = measured;
+      titleHeight = inkHeight;
+      narrowest = widest;
+      if (measured.length === 1) break;
+    }
+    if (lines) break;
+    size *= .93;
+  }
+  if (!lines) { context.restore(); return; }
+  const blockHeight = titleHeight + tagGap() + tag.height;
+  const titleX = panel.x + padX;
+  const titleY = state.titlePosition === 'top' ? panel.y + padY : panel.y + panel.h - padY - blockHeight;
   if (state.titleGlow) {
     context.shadowColor = state.titleFill === 'pink' ? '#ff3d9a' : '#ff8b80';
-    context.shadowBlur = Math.max(8, size * .14);
+    context.shadowBlur = Math.min(padX, size * .14);
   }
   if (state.titleFill === 'white') context.fillStyle = '#fff8f0';
   else if (state.titleFill === 'pink') context.fillStyle = '#ff5ca8';
@@ -221,24 +234,22 @@ function drawLettering(context, width, height, state, grade) {
     fill.addColorStop(1, '#ff619e');
     context.fillStyle = fill;
   }
-  for (let index = 0; index < lines.length; index += 1) {
-    const lineY = titleY + index * lineHeight;
+  let textY = titleY;
+  for (const line of lines) {
     if (state.titleOutline) {
       context.lineWidth = Math.max(2, size * .035);
       context.strokeStyle = 'rgba(25,10,39,.9)';
-      context.strokeText(lines[index], titleX, lineY, maxWidth);
+      context.lineJoin = 'round';
+      context.strokeText(line.text, titleX + line.left, textY + line.ascent);
     }
-    context.fillText(lines[index], titleX, lineY, maxWidth);
+    context.fillText(line.text, titleX + line.left, textY + line.ascent);
+    textY += line.height + lineGap();
   }
   context.shadowBlur = 0;
-  context.font = `${Math.max(13, size * .18)}px Bebas, Arial, sans-serif`;
-  context.letterSpacing = `${Math.max(1, state.letterSpacing * .7)}px`;
+  setTagFont(tagSize);
   context.fillStyle = '#fff4ea';
   context.globalAlpha = .92;
-  const tagline = (state.tagline || 'A NIGHT TO REMEMBER').toUpperCase();
-  const taglineY = state.titlePosition === 'top' ? titleY + titleHeight + size * .12 : titleY + titleHeight + size * .12;
-  context.fillText(tagline, titleX, Math.min(taglineY, height - size * .05), maxWidth);
-  context.globalAlpha = 1;
+  context.fillText(tag.text, titleX + tag.left, titleY + titleHeight + tagGap() + tag.ascent);
   context.restore();
 }
 
@@ -253,7 +264,7 @@ export function drawCover(canvas, state, options = {}) {
   const panels = getPanelRects(state.layout, width, height);
   panels.forEach((panel, index) => drawPanel(context, panel, state.photos[state.assignments[index] ?? 0]?.image, state.transforms[index] || { zoom: 1, panX: 0, panY: 0, fit: false }, grade, index));
   drawDecoration(context, width, height, state, grade);
-  drawLettering(context, width, height, state, grade);
+  drawLettering(context, panels[TITLE_PANEL[state.layout] ?? TITLE_PANEL.key] || panels[0], width, height, state);
   context.save();
   context.strokeStyle = 'rgba(255,248,239,.84)';
   context.lineWidth = Math.max(4, Math.min(width, height) * .007);

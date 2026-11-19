@@ -1,11 +1,14 @@
 export function sceneForQuery(query) {
   const scene = query.get('shot') || 'editor';
-  const photo = query.get('photo') || (scene === 'cover' || scene === 'cover-square' ? 'boulevard' : 'pier');
+  const requested = query.get('photo');
+  const photo = ['pier', 'boulevard'].includes(requested) ? requested : (scene === 'cover' || scene === 'cover-square' ? 'boulevard' : 'pier');
+  const alternate = photo === 'pier' ? 'boulevard' : 'pier';
   const caption = query.get('caption') || (scene === 'cover' ? 'BOULEVARD QUEEN' : scene === 'cover-square' ? 'NEON DRIVE' : 'SUNSET HEIST');
-  if (scene === 'cover') return { scene, photo, caption, layout: 'trio', size: 'wide', grade: 'sunset', tagline: 'THE CITY NEVER SLEEPS', titlePosition: 'bottom' };
-  if (scene === 'cover-portrait') return { scene, photo, caption, layout: 'key', size: 'portrait', grade: 'sunset', tagline: 'A NIGHT TO REMEMBER', titlePosition: 'bottom' };
-  if (scene === 'cover-square') return { scene, photo, caption, layout: 'duo', size: 'square', grade: 'neon', tagline: 'CHASE THE AFTERGLOW', titlePosition: 'top' };
-  return { scene: 'editor', photo: 'pier', caption, layout: 'key', size: 'square', grade: 'sunset', tagline: 'A NIGHT TO REMEMBER', titlePosition: 'bottom' };
+  const base = { scene, caption, titlePosition: 'bottom' };
+  if (scene === 'cover') return { ...base, assignments: [photo, alternate, photo], layout: 'trio', size: 'wide', grade: 'sunset', tagline: 'THE CITY NEVER SLEEPS', pans: [{ panY: -.35 }, { panY: -.31 }, { panY: .35 }] };
+  if (scene === 'cover-portrait') return { ...base, assignments: [alternate, photo, photo, alternate, alternate], layout: 'key', size: 'portrait', grade: 'sunset', tagline: 'A NIGHT TO REMEMBER', pans: { 3: { panX: .31 } } };
+  if (scene === 'cover-square') return { ...base, assignments: [photo, alternate], layout: 'duo', size: 'square', grade: 'neon', tagline: 'CHASE THE AFTERGLOW' };
+  return { ...base, scene: 'editor', assignments: Array(5).fill(photo), layout: 'key', size: 'square', grade: 'sunset', tagline: 'A NIGHT TO REMEMBER', pans: { 3: { panX: .14 } } };
 }
 
 export function isCoverScene(scene) {
