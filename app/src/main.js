@@ -179,7 +179,7 @@ async function runSelftest() {
 async function bootstrap() {
   wireControls();
   await Promise.allSettled([document.fonts.load('16px Anton'), document.fonts.load('16px Bebas')]);
-  const indices = await loadSamples(shot.assignments);
+  const indices = await loadSamples(shot.samples ?? shot.assignments);
   state.assignments = state.assignments.map((_, index) => indices.get(shot.assignments[index]) ?? 0);
   state.layout = shot.layout;
   for (const [index, pan] of Object.entries(shot.pans ?? {})) Object.assign(state.transforms[index], pan);

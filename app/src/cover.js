@@ -61,6 +61,27 @@ function drawImageCover(context, image, panel, transform) {
   const drawHeight = imageHeight * scale;
   const drawX = panel.x + (panel.w - drawWidth) / 2 + transform.panX * (panel.w - drawWidth);
   const drawY = panel.y + (panel.h - drawHeight) / 2 + transform.panY * (panel.h - drawHeight);
+  if (!transform.fit && transform.zoom < 1) {
+    context.save();
+    context.filter = `blur(${Math.max(8, panel.h * .04)}px)`;
+    drawImageCover(context, image, panel, { ...transform, zoom: 1 });
+    context.restore();
+    const foreground = document.createElement('canvas');
+    foreground.width = Math.ceil(drawWidth);
+    foreground.height = Math.ceil(drawHeight);
+    const foregroundContext = foreground.getContext('2d');
+    foregroundContext.drawImage(image, 0, 0, foreground.width, foreground.height);
+    const feather = foregroundContext.createLinearGradient(0, 0, foreground.width, 0);
+    feather.addColorStop(0, 'transparent');
+    feather.addColorStop(.10, '#fff');
+    feather.addColorStop(.90, '#fff');
+    feather.addColorStop(1, 'transparent');
+    foregroundContext.globalCompositeOperation = 'destination-in';
+    foregroundContext.fillStyle = feather;
+    foregroundContext.fillRect(0, 0, foreground.width, foreground.height);
+    context.drawImage(foreground, drawX, drawY, drawWidth, drawHeight);
+    return;
+  }
   context.drawImage(image, drawX, drawY, drawWidth, drawHeight);
 }
 
@@ -93,19 +114,17 @@ function drawSun(context, width, height, grade, position) {
   const radius = Math.min(width, height) * .026;
   const centerX = width * (position === 'top-left' ? .052 : .948);
   const centerY = radius * 2.2;
-  const glowRadius = radius * 1.8;
+  const glowRadius = radius * 2.2;
   context.save();
-  const glow = context.createRadialGradient(centerX, centerY, radius * .5, centerX, centerY, glowRadius);
-  glow.addColorStop(0, `${grade.sun}70`);
-  glow.addColorStop(.55, `${grade.sun}26`);
+  const glow = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowRadius);
+  glow.addColorStop(0, '#fff5d6ee');
+  glow.addColorStop(.18, `${grade.sun}dd`);
+  glow.addColorStop(.38, `${grade.sun}bb`);
+  glow.addColorStop(.52, `${grade.sun}66`);
+  glow.addColorStop(.73, `${grade.sun}22`);
   glow.addColorStop(1, `${grade.sun}00`);
   context.fillStyle = glow;
   context.fillRect(centerX - glowRadius, centerY - glowRadius, glowRadius * 2, glowRadius * 2);
-  context.fillStyle = grade.sun;
-  context.globalAlpha = .85;
-  context.beginPath();
-  context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-  context.fill();
   context.restore();
 }
 
