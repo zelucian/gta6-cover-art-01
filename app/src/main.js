@@ -185,6 +185,7 @@ async function bootstrap() {
   for (const [index, pan] of Object.entries(shot.pans ?? {})) Object.assign(state.transforms[index], pan);
   state.previewSize = shot.size;
   state.grade = shot.grade;
+  state.sunPosition = shot.sunPosition ?? state.sunPosition;
   state.title = shot.caption;
   state.tagline = shot.tagline;
   state.titlePosition = shot.titlePosition;
