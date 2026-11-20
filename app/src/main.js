@@ -187,6 +187,7 @@ async function bootstrap() {
   state.grade = shot.grade;
   state.title = shot.caption;
   state.tagline = shot.tagline;
+  state.sunPosition = shot.sunPosition ?? state.sunPosition;
   state.titlePosition = shot.titlePosition;
   state.selectedPanel = 0;
   resizePreview();
