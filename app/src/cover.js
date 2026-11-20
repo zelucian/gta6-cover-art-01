@@ -56,11 +56,32 @@ function drawImageCover(context, image, panel, transform) {
   if (!imageWidth || !imageHeight) return;
   const fillScale = Math.max(panel.w / imageWidth, panel.h / imageHeight);
   const fitScale = Math.min(panel.w / imageWidth, panel.h / imageHeight);
-  const scale = (transform.fit ? fitScale : fillScale) * (transform.fit ? transform.zoom : Math.max(1, transform.zoom));
+  const scale = (transform.fit ? fitScale : fillScale) * transform.zoom;
   const drawWidth = imageWidth * scale;
   const drawHeight = imageHeight * scale;
   const drawX = panel.x + (panel.w - drawWidth) / 2 + transform.panX * (panel.w - drawWidth);
   const drawY = panel.y + (panel.h - drawHeight) / 2 + transform.panY * (panel.h - drawHeight);
+  if (!transform.fit && transform.zoom < 1) {
+    context.save();
+    context.filter = `blur(${Math.max(8, panel.h * .04)}px)`;
+    drawImageCover(context, image, panel, { ...transform, zoom: 1 });
+    context.restore();
+    const foreground = document.createElement('canvas');
+    foreground.width = Math.ceil(drawWidth);
+    foreground.height = Math.ceil(drawHeight);
+    const foregroundContext = foreground.getContext('2d');
+    foregroundContext.drawImage(image, 0, 0, foreground.width, foreground.height);
+    const feather = foregroundContext.createLinearGradient(0, 0, foreground.width, 0);
+    feather.addColorStop(0, 'transparent');
+    feather.addColorStop(.10, '#fff');
+    feather.addColorStop(.90, '#fff');
+    feather.addColorStop(1, 'transparent');
+    foregroundContext.globalCompositeOperation = 'destination-in';
+    foregroundContext.fillStyle = feather;
+    foregroundContext.fillRect(0, 0, foreground.width, foreground.height);
+    context.drawImage(foreground, drawX, drawY, drawWidth, drawHeight);
+    return;
+  }
   context.drawImage(image, drawX, drawY, drawWidth, drawHeight);
 }
 
